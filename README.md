@@ -27,3 +27,21 @@ And in the repo local path:
 ```
 nb-clean add-filter
 ```
+
+## Description of the analysis
+Here is some general guideline for how to run the analyses for the different projects.
+
+###Visual feedback effect - E0050 (`fb_effect`)
+In this analysis, scripts are in `scripts/fb_effect`, notebooks in `scripts/fb_effect`,
+and utilities in `ec_code/fb_effect`. The overall concept is to work with information aggregated from all fish in dataframes:
+ - `exp_df`: contains info for every experiment (genotype, quality, fish adaptation, etc.)
+ - `cells_df`: contains info for every cell from every fish (coordinates, fish, ...); when then performing motor- and sensory- related analysis, additional columns are added with info on motor/sensory responsiveness, etc.
+ - `bouts_df`: info for every individual bout from all fish (time, bout stats, fish, etc,)
+ - `trial_df`: info for every individual trial from all fish (time, speed, bouts occorred, timing of the bout, fish, etc.)
+ - `traces_df`: huge matrix with traces from all cells, with column names corresponding to unique cell indexes
+
+Steps:
+
+- data from all individual fish is pooled together in huge flammkuchen 
+files (using `0_create_dataframes.py`)
+- some preprocessing on bouts is computed, and dataframes that pool together info for every experiment, bout, trial, cell are created (using `1_preprocess_dataframes.py`)

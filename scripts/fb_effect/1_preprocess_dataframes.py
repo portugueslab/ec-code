@@ -1,4 +1,5 @@
-from pathlib import Path
+"""Preprocess data to aggregate dataframes: bouts_df, cells_df, exp_df.
+"""
 
 import flammkuchen as fl
 import numpy as np

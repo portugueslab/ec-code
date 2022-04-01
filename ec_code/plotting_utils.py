@@ -4,13 +4,21 @@ import numpy as np
 plt.rcParams["figure.constrained_layout.use"] = True
 plt.rcParams["font.family"] = "sans-serif"
 plt.rcParams["font.sans-serif"] = ["Libertinus Sans"]
-plt.rcParams["xtick.labelsize"] = 10
-plt.rcParams["ytick.labelsize"] = 10
-plt.rcParams["axes.labelsize"] = 12
+plt.rcParams["xtick.labelsize"] = 8
+plt.rcParams["ytick.labelsize"] = 8
+plt.rcParams["axes.labelsize"] = 10
 plt.rcParams["axes.linewidth"] = 0.5
 plt.rcParams["axes.edgecolor"] = "0.3"
 plt.rcParams["xtick.major.width"] = 0.5
 plt.rcParams["ytick.major.width"] = 0.5
+
+cols = np.array([[72,177,167],
+                 [200,87,123],
+                 [182,94,189],
+                 [103,166,78],
+                 [111,124,203],
+                 [180,148,64],
+                 [202,96,63]]) / 255
 
 def despine(ax, spare=[], ticks=False):
     for side in ["left", "right", "top", "bottom"]:
@@ -51,3 +59,42 @@ def get_xy(cropped):
     xarr = np.concatenate(np.vstack([np.arange(bins + 1), ] * nreps))
 
     return xarr, yarr
+
+def plot_crop(data_mat, f=None, bound_box=None, vlim=3, r=0.65):
+    """Plot full matrix and individual and average traces for cropped data.
+    """
+    if f is None:
+        f = plt.figure()
+    if bound_box is None:
+        bound_box = (0.1, 0.1, 0.6, 0.8)
+
+    hp, vp, w, h = bound_box
+    ax = f.add_axes((hp, vp + h * (1 - r), w, h * r))
+    ax.imshow(
+        data_mat.T,
+        aspect="auto",
+        extent=(-pre_int_s, post_int_s, 0, data_mat.shape[1]),
+        cmap="RdBu_r",
+        vmin=-vlim,
+        vmax=vlim,
+    )
+    local_utils.despine(ax, ticks=True)
+    ax1 = f.add_axes((hp, vp, w, h * (1 - r)))
+    ax1.axvline(0, linewidth=0.5, c=(0.6,) * 3)
+    ax1.plot(
+        np.linspace(-pre_int_s, post_int_s, data_mat.shape[0]),
+        data_mat,
+        linewidth=0.1,
+        c="b",
+    )
+    ax1.plot(
+        np.linspace(-pre_int_s, post_int_s, data_mat.shape[0]),
+        np.nanmean(data_mat, 1),
+        linewidth=1.5,
+        c="r",
+    )
+    despine(ax1, spare=["left", "bottom"])
+    ax1.set_xlim(-pre_int_s, post_int_s)
+    ax1.set_xlabel("time (s)")
+
+    return ax, ax1

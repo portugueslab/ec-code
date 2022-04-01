@@ -1,3 +1,13 @@
+"""Perform bout-matching procedure to match bouts in duration. It also compute an
+adaptation score for each fish. The bouts_df and exp_df files are then overwritten
+with the new columns.
+"""
+
+from ec_code.file_utils import get_dataset_location
+import flammkuchen as fl
+import numpy as np
+from tqdm import tqdm
+
 ##############################################
 # Match bouts by duration & temporal proximity
 # Here we select for each fish a subset of bouts in closed and open loop
@@ -5,9 +15,20 @@
 # in the experiment to make sure we can compare responses with and w/o visual
 # reafference.
 
-bout_length_similarity_thr = 0.05
-bout_max_timedistance = 600
+# Maximum difference in bout length (in seconds) allowed in the matching procedure:
+BOUT_LENGTH_SIMILARITY_THR_S = 0.05
 
+# Maximum distance in time between two bouts. We do this to avoid the confounding effect
+# of slow trends during the experiment of bout durations and fluorescence signal, which
+# could produce spurious differences in responses to bouts (when comparing eg
+# closed-loop bouts from the beginning of the experiment with open-loop from the end).
+BOUT_MAX_TIMEDISTANCE_S = 600
+
+master_path = get_dataset_location("fb_effect")
+
+# Load dataframes:
+exp_df = fl.load(master_path / "exp_df.h5")
+bouts_df = fl.load(master_path / "bouts_df.h5")
 
 bouts_df["matched"] = False
 for fid in tqdm(exp_df.index):
@@ -25,7 +46,7 @@ for fid in tqdm(exp_df.index):
         selection = (
             (bouts_df["gain"] == 0)
             & ~bouts_df["matched"]
-            & (time_distances < bout_max_timedistance)
+            & (time_distances < BOUT_MAX_TIMEDISTANCE_S)
             & common_sel
         )
 
@@ -35,6 +56,6 @@ for fid in tqdm(exp_df.index):
         )
 
         # If we have a valid candidate, match it :
-        if diffs.min() < bout_length_similarity_thr:
+        if diffs.min() < BOUT_LENGTH_SIMILARITY_THR_S:
             bouts_df.loc[diffs.sort_values().index[0], "matched"] = True
             bouts_df.loc[b, "matched"] = True
