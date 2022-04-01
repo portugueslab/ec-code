@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 .idea/
+
+# dataset location file
+/dataset_location.txt

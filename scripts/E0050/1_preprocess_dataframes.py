@@ -3,15 +3,15 @@ from pathlib import Path
 import flammkuchen as fl
 import numpy as np
 import pandas as pd
-from bouter import bout_stats, decorators, utilities
-from bouter.angles import reduce_to_pi
+from bouter import bout_stats, utilities
 from bouter.utilities import (
     extract_segments_above_threshold,
     predictive_tail_fill,
-    resample,
 )
 from scipy.interpolate import interp1d
 from tqdm import tqdm
+
+from ec_code.file_utils import get_dataset_location
 
 
 def merge_bouts(bouts, min_dist):
@@ -69,13 +69,21 @@ def get_bout_properties(t_array, tail_sum, vigor, threshold=0.1):
     )
 
 
-# master_path = Path(r"J:\_Shared\experiments\E0050_IO_multistim\v01_noflashes")
-master_path = Path(r"/Users/luigipetrucco/Google Drive/data/ECs_E50")
+master_path = get_dataset_location("motor_adaptation")
 raw_data_file = master_path / "summary_dfs.h5"
 
-
+# TODO read some of those
+PAUSE_DUR = 7
 VIG_WND_S = 0.05
 DT_BE_RESAMP = 0.0025
+IMAGING_DT_S = 0.2
+N_TAIL_SEGMENTS = 9
+DIFF_VEL_THR = 0.025  # threshold for detecting stimulus moving times
+
+USEFUL_STIM_KEYS = [
+        f"selfcalib_shuntgrat_clol1D_base_{k}" for k in ["vel", "gain", "vel", "x", "fish_swimming"]
+    ]
+
 STIM_ATTRIB_TO_ADD = ["base_vel", "gain"]
 raw_data_file = master_path / "summary_dfs.h5"
 stim_namebase = "selfcalib_shuntgrat_clol1D"
@@ -189,8 +197,8 @@ for i, fid in enumerate(tqdm(exp_df.index)):
     stim_log = fl.load(raw_data_file, f"/stimlog_dict/{fid}")
     beh_log = fl.load(raw_data_file, f"/beh_dict/{fid}")
 
-    stim_log["t"] += offset
-    beh_log["t"] += offset
+    stim_log.loc[:, "t"] += offset
+    beh_log.loc[:, "t"] += offset
 
     # Remove duplications in the stimulus log dataframe, and set t as index:
     stim_log = stim_log.loc[~stim_log["t"].duplicated(keep="first")].copy()
@@ -199,15 +207,15 @@ for i, fid in enumerate(tqdm(exp_df.index)):
     # Calculate vigor, tail_sum:
     dt_be = np.nanmedian(np.diff(beh_log["t"]))
     vig_wnd_pts = int(VIG_WND_S / dt_be)
-    thetas = beh_log.loc[:, [f"theta_0{i}" for i in range(9)]].values
-    beh_log.loc[:, [f"theta_0{i}" for i in range(9)]] = predictive_tail_fill(thetas)
+    thetas = beh_log.loc[:, [f"theta_0{i}" for i in range(N_TAIL_SEGMENTS)]].values
+    beh_log.loc[:, [f"theta_0{i}" for i in range(N_TAIL_SEGMENTS)]] = predictive_tail_fill(thetas)
 
     beh_log.loc[:, "tail_sum"] = beh_log.loc[:, "theta_08"]
     beh_log["vigor"] = (
         beh_log["tail_sum"].rolling(window=vig_wnd_pts, center=True).std()
     )
 
-    # Remove pre-acquisition start trailing behavior (t<0) and resample:
+    # Remove pre-acquisition start trailing behavior (t < 0):
     beh_log = beh_log[beh_log["t"] > 0]
 
     # Recalculate bout properties (to be fixed when bouter is corrected)
@@ -248,26 +256,21 @@ for i, fid in enumerate(tqdm(exp_df.index)):
     filt_behlog_dict[fid] = beh_log[["t", "tail_sum", "vigor"]]
 
     # filter stimulus log with the actually useful entries:
-    useful_stim_keys = [
-        "selfcalib_shuntgrat_clol1D_base_vel",
-        "selfcalib_shuntgrat_clol1D_gain",
-        "selfcalib_shuntgrat_clol1D_vel",
-        "selfcalib_shuntgrat_clol1D_x",
-        "selfcalib_shuntgrat_clol1D_fish_swimming",
-    ]
-    if "moving_gratings_x" in stim_log.keys():
-        useful_stim_keys.append("moving_gratings_x")
 
-    stim_log_filt = stim_log[useful_stim_keys]
+    if "moving_gratings_x" in stim_log.keys():
+        USEFUL_STIM_KEYS.append("moving_gratings_x")
+
+    stim_log_filt = stim_log[USEFUL_STIM_KEYS].copy()
     # Handle fish_swimming variable to use same format:
     ks_to_conv = ["selfcalib_shuntgrat_clol1D_fish_swimming"]
     for k in ks_to_conv:
-        stim_log_filt.loc[:, k] = stim_log_filt[k].values.astype(np.float)
+        stim_log_filt.loc[:, k] = stim_log_filt[k].values.astype(float)
+    
     filt_stimlog_dict[fid] = stim_log_filt
-
+    
     ################################
     # 5. Trial-wise df #############
-
+    
     # Backward gratings stimulus:
     # Use derivative to find trial start and trial end from stimulus velocity:
     vel_diff = np.ediff1d(stim_log["selfcalib_shuntgrat_clol1D_base_vel"], to_begin=0)
@@ -290,12 +293,12 @@ for i, fid in enumerate(tqdm(exp_df.index)):
         ),
         index=range(len(trial_s_cl)),
     )
-
+    
     if "moving_gratings_x" in stim_log.keys():
         # Forward gratings stimulus; here we have better-functioning phase log:
         vel_profile = (
-            np.ediff1d(stim_log["moving_gratings_x"], to_begin=0) > 0.025
-        ).astype(np.float)
+            np.ediff1d(stim_log["moving_gratings_x"], to_begin=0) > DIFF_VEL_THR
+        ).astype(float)
         vel_diff = np.ediff1d(vel_profile, to_begin=0)
         trial_s_backward = stim_log[vel_diff > 0].index
         trial_e_backward = stim_log[vel_diff < 0].index
@@ -319,8 +322,8 @@ for i, fid in enumerate(tqdm(exp_df.index)):
         new_trials_df = pd.concat([new_trials_df, trials_df_backward])
 
     # Loop over trials, and fill dataframe with bout statistics:
+    
     for i in new_trials_df.index:
-
         # Find bouts in temporal boundaries of trial i:
         bout_idxs = new_bouts_df[
             (new_bouts_df["t_start"] > new_trials_df.loc[i, "t_start"])
@@ -337,9 +340,7 @@ for i, fid in enumerate(tqdm(exp_df.index)):
             new_trials_df.loc[i, "bout_duration"] = new_bouts_df.loc[
                 bout_idxs[0], "duration"
             ]
-
         # Check for leading bouts:
-        PAUSE_DUR = 7  # TODO read this
         trail_bout_idxs = new_bouts_df[
             (new_bouts_df["t_start"] > new_trials_df.loc[i, "t_start"] - PAUSE_DUR)
             & (new_bouts_df["t_start"] < new_trials_df.loc[i, "t_start"])
@@ -360,12 +361,12 @@ for i, fid in enumerate(tqdm(exp_df.index)):
                 new_bouts_df.loc[trail_bout_idxs[0], "t_start"]
                 - new_trials_df.loc[i, "t_end"]
             )
-
+    
     new_trials_df.index = [f"{fid}_tr{i:>04}" for i in new_trials_df.index]
     trials_df = pd.concat([trials_df, new_trials_df])
 
 # Imaging dt for each experiment, might have to be changed in the future.
-dt = np.full(len(exp_df), 0.2)
+dt = np.full(len(exp_df), IMAGING_DT_S)
 exp_df["dt"] = dt
 
 # Add genotype info to cells
