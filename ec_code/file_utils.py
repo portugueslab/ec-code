@@ -1,6 +1,6 @@
 from pathlib import Path
 
-DATASET_NAMES = dict(motor_adaptation="ECs_E50")
+DATASET_NAMES = dict(fb_effect="ECs_E50")
 
 def _get_master_dataset_location():
     """Handles finding the source data of the analysis by reading the repo

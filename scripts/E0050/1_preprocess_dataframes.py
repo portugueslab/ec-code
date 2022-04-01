@@ -69,7 +69,7 @@ def get_bout_properties(t_array, tail_sum, vigor, threshold=0.1):
     )
 
 
-master_path = get_dataset_location("motor_adaptation")
+master_path = get_dataset_location("fb_effect")
 raw_data_file = master_path / "summary_dfs.h5"
 
 # TODO read some of those
@@ -374,7 +374,7 @@ cells_df["genotype"] = cells_df["fid"].map(exp_df["genotype"])
 bouts_df["genotype"] = bouts_df["fid"].map(exp_df["genotype"])
 trials_df["genotype"] = trials_df["fid"].map(exp_df["genotype"])
 
-fl.save(master_path / "exp_df.h5", exp_df)
+fl.save(master_path / "exp_df_raw.h5", exp_df)
 fl.save(master_path / "traces_df.h5", traces_df)
 fl.save(master_path / "cells_df.h5", cells_df)
 fl.save(master_path / "bouts_df.h5", bouts_df)

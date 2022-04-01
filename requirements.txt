@@ -1,0 +1,8 @@
+numpy
+flammkuchen
+scipy
+matplotlib
+tqdm
+pandas
+bouter
+ipywidgets
