@@ -24,13 +24,27 @@ BOUT_LENGTH_SIMILARITY_THR_S = 0.05
 # closed-loop bouts from the beginning of the experiment with open-loop from the end).
 BOUT_MAX_TIMEDISTANCE_S = 600
 
+# Minimum distance between bouts for inclusion:
+MIN_DIST_S = 2
+
 master_path = get_dataset_location("fb_effect")
 
 # Load dataframes:
 exp_df = fl.load(master_path / "exp_df.h5")
 bouts_df = fl.load(master_path / "bouts_df.h5")
 
+
+bouts_df["mindist_included"] = (bouts_df["after_interbout"] > MIN_DIST_S) & (
+    bouts_df["inter_bout"] > MIN_DIST_S
+)
+
+# Devide bouts in gain0, gain1 and spontaneous:
+bouts_df["g0"] = (bouts_df["base_vel"] < 0) & (bouts_df["gain"] == 0)
+bouts_df["g1"] = (bouts_df["base_vel"] < 0) & (bouts_df["gain"] == 1)
+bouts_df["spont"] = bouts_df["base_vel"] > -10
+
 bouts_df["matched"] = False
+
 for fid in tqdm(exp_df.index):
     common_sel = (
         (bouts_df["fid"] == fid) & (bouts_df["mindist_included"]) & ~bouts_df["spont"]
