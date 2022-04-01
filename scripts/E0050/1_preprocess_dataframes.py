@@ -31,6 +31,8 @@ def merge_bouts(bouts, min_dist):
 
 def get_bout_properties(t_array, tail_sum, vigor, threshold=0.1):
     """Create dataframe with summary of bouts properties.
+    This is probably complete duplicate from bouter function.
+
     :return: a dataframe giving properties for each bout
     """
     # Window for the calculation of bout directionality:
@@ -107,7 +109,7 @@ trials_df = pd.DataFrame()
 (cells_df["cid"].values == traces_df.columns.values).all()
 cells_df = cells_df.set_index("cid")
 
-# Remove cells with sum == 0:
+# Remove cells with sum == 0, which are invalid suite2p ROIs:
 traces_df = traces_df.iloc[:, np.nansum(traces_df, 0) != 0]
 cells_df = cells_df.loc[traces_df.columns, :]
 
@@ -132,6 +134,11 @@ filt_behlog_dict = dict()
 # For a bug in microscope acquisition software, there are some funny offsets
 # that need to be used for synchronization with stytra temporal information.
 # This has been semi/automatically computed looking at motor artefact timing.
+
+# The fact that it is specified in a list makes me cry. This will probably break
+# the moment the order of folders is altered for any reason.
+# Don't try this at home.
+# TODO: probably one of the first things that have to go
 offsets = [
     -0.8,
     -0.8,
@@ -332,7 +339,7 @@ for i, fid in enumerate(tqdm(exp_df.index)):
             ]
 
         # Check for leading bouts:
-        PAUSE_DUR = 7  # todo read this
+        PAUSE_DUR = 7  # TODO read this
         trail_bout_idxs = new_bouts_df[
             (new_bouts_df["t_start"] > new_trials_df.loc[i, "t_start"] - PAUSE_DUR)
             & (new_bouts_df["t_start"] < new_trials_df.loc[i, "t_start"])
