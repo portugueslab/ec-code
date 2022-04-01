@@ -1,4 +1,4 @@
-np-clean
+np - clean
 black
 isort
 flake8

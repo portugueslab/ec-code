@@ -82,8 +82,9 @@ N_TAIL_SEGMENTS = 9
 DIFF_VEL_THR = 0.025  # threshold for detecting stimulus moving times
 
 USEFUL_STIM_KEYS = [
-        f"selfcalib_shuntgrat_clol1D_base_{k}" for k in ["vel", "gain", "vel", "x", "fish_swimming"]
-    ]
+    f"selfcalib_shuntgrat_clol1D_base_{k}"
+    for k in ["vel", "gain", "vel", "x", "fish_swimming"]
+]
 
 STIM_ATTRIB_TO_ADD = ["base_vel", "gain"]
 raw_data_file = master_path / "summary_dfs.h5"
@@ -209,7 +210,9 @@ for i, fid in enumerate(tqdm(exp_df.index)):
     dt_be = np.nanmedian(np.diff(beh_log["t"]))
     vig_wnd_pts = int(VIG_WND_S / dt_be)
     thetas = beh_log.loc[:, [f"theta_0{i}" for i in range(N_TAIL_SEGMENTS)]].values
-    beh_log.loc[:, [f"theta_0{i}" for i in range(N_TAIL_SEGMENTS)]] = predictive_tail_fill(thetas)
+    beh_log.loc[
+        :, [f"theta_0{i}" for i in range(N_TAIL_SEGMENTS)]
+    ] = predictive_tail_fill(thetas)
 
     beh_log.loc[:, "tail_sum"] = beh_log.loc[:, "theta_08"]
     beh_log["vigor"] = (
@@ -266,12 +269,12 @@ for i, fid in enumerate(tqdm(exp_df.index)):
     ks_to_conv = ["selfcalib_shuntgrat_clol1D_fish_swimming"]
     for k in ks_to_conv:
         stim_log_filt.loc[:, k] = stim_log_filt[k].values.astype(float)
-    
+
     filt_stimlog_dict[fid] = stim_log_filt
-    
+
     ################################
     # 5. Trial-wise df #############
-    
+
     # Backward gratings stimulus:
     # Use derivative to find trial start and trial end from stimulus velocity:
     vel_diff = np.ediff1d(stim_log["selfcalib_shuntgrat_clol1D_base_vel"], to_begin=0)
@@ -294,7 +297,7 @@ for i, fid in enumerate(tqdm(exp_df.index)):
         ),
         index=range(len(trial_s_cl)),
     )
-    
+
     if "moving_gratings_x" in stim_log.keys():
         # Forward gratings stimulus; here we have better-functioning phase log:
         vel_profile = (
@@ -323,7 +326,7 @@ for i, fid in enumerate(tqdm(exp_df.index)):
         new_trials_df = pd.concat([new_trials_df, trials_df_backward])
 
     # Loop over trials, and fill dataframe with bout statistics:
-    
+
     for i in new_trials_df.index:
         # Find bouts in temporal boundaries of trial i:
         bout_idxs = new_bouts_df[
@@ -362,7 +365,7 @@ for i, fid in enumerate(tqdm(exp_df.index)):
                 new_bouts_df.loc[trail_bout_idxs[0], "t_start"]
                 - new_trials_df.loc[i, "t_end"]
             )
-    
+
     new_trials_df.index = [f"{fid}_tr{i:>04}" for i in new_trials_df.index]
     trials_df = pd.concat([trials_df, new_trials_df])
 

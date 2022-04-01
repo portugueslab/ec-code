@@ -3,10 +3,12 @@ adaptation score for each fish. The bouts_df and exp_df files are then overwritt
 with the new columns.
 """
 
-from ec_code.file_utils import get_dataset_location
 import flammkuchen as fl
 import numpy as np
 from tqdm import tqdm
+
+from ec_code.fb_effect.default_vals import DEF_DT, POST_INT_BT_S, PRE_INT_BT_S
+from ec_code.file_utils import get_dataset_location
 
 ##############################################
 # Match bouts by duration & temporal proximity
@@ -24,8 +26,6 @@ BOUT_LENGTH_SIMILARITY_THR_S = 0.05
 # closed-loop bouts from the beginning of the experiment with open-loop from the end).
 BOUT_MAX_TIMEDISTANCE_S = 600
 
-# Minimum distance between bouts for inclusion:
-MIN_DIST_S = 2
 
 master_path = get_dataset_location("fb_effect")
 
@@ -34,8 +34,9 @@ exp_df = fl.load(master_path / "exp_df.h5")
 bouts_df = fl.load(master_path / "bouts_df.h5")
 
 
-bouts_df["mindist_included"] = (bouts_df["after_interbout"] > MIN_DIST_S) & (
-    bouts_df["inter_bout"] > MIN_DIST_S
+# This key ensure that there's no other bouts in the cropping interval
+bouts_df["mindist_included"] = (bouts_df["after_interbout"] > PRE_INT_BT_S) & (
+    bouts_df["inter_bout"] > POST_INT_BT_S
 )
 
 # Devide bouts in gain0, gain1 and spontaneous:

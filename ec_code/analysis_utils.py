@@ -1,15 +1,22 @@
+import warnings
+
 import numpy as np
-import pandas as pd
-import flammkuchen as fl
 from bouter.utilities import crop
 
-cols = np.array([[72, 177, 167],
-                 [200, 87, 123],
-                 [182, 94, 189],
-                 [103, 166, 78],
-                 [111, 124, 203],
-                 [180, 148, 64],
-                 [202, 96, 63]]) / 255
+cols = (
+    np.array(
+        [
+            [72, 177, 167],
+            [200, 87, 123],
+            [182, 94, 189],
+            [103, 166, 78],
+            [111, 124, 203],
+            [180, 148, 64],
+            [202, 96, 63],
+        ]
+    )
+    / 255
+)
 
 
 def bout_nan_traces(traces, idxs, wnd_pre=2, wnd_post=5):
@@ -17,7 +24,7 @@ def bout_nan_traces(traces, idxs, wnd_pre=2, wnd_post=5):
     """
     out_traces = traces.copy()
     for idx in idxs:
-        out_traces[idx - wnd_pre:idx + wnd_post, :] = np.nan
+        out_traces[idx - wnd_pre : idx + wnd_post, :] = np.nan
 
     return out_traces
 
@@ -32,9 +39,13 @@ def max_amplitude_resp(traces, percentile=80):
     :param: traces: 2D (timepoints x n_cells/responses) array
     :param: percentile: percentile to calculate the time window for the max deviation
     """
-    # Find timepoints that are not in the maximum deviation window:
-    resp_amplitude_pts = np.abs(traces) < np.nanpercentile(np.abs(traces), percentile,
-                                                           axis=0)
+    # Find timepoints that are not in the maximum deviation window. We suppress warnings
+    # as sometimes traces can be all nan:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        resp_amplitude_pts = np.abs(traces) < np.nanpercentile(
+            np.abs(traces), percentile, axis=0
+        )
 
     # Set those points to nan, and calculate mean of the rest:
     resp_amplitude_pts[resp_amplitude_pts] = np.nan
@@ -92,4 +103,3 @@ def crop_f_beh_at_times(
         return cropped, cropped_be
 
     return cropped
-

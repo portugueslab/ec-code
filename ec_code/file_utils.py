@@ -2,6 +2,7 @@ from pathlib import Path
 
 DATASET_NAMES = dict(fb_effect="ECs_E50")
 
+
 def _get_master_dataset_location():
     """Handles finding the source data of the analysis by reading the repo
     dataset_location.txt file.
@@ -12,7 +13,9 @@ def _get_master_dataset_location():
         with open(specification_txt, "r") as f:
             return Path(f.read())
     else:
-        raise FileNotFoundError("dataset_location.txt file not found in project folder!")
+        raise FileNotFoundError(
+            "dataset_location.txt file not found in project folder!"
+        )
 
 
 def get_dataset_location(dataset_name):

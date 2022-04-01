@@ -1,5 +1,5 @@
-from matplotlib import pyplot as plt
 import numpy as np
+from matplotlib import pyplot as plt
 
 plt.rcParams["figure.constrained_layout.use"] = True
 plt.rcParams["font.family"] = "sans-serif"
@@ -12,13 +12,21 @@ plt.rcParams["axes.edgecolor"] = "0.3"
 plt.rcParams["xtick.major.width"] = 0.5
 plt.rcParams["ytick.major.width"] = 0.5
 
-cols = np.array([[72,177,167],
-                 [200,87,123],
-                 [182,94,189],
-                 [103,166,78],
-                 [111,124,203],
-                 [180,148,64],
-                 [202,96,63]]) / 255
+cols = (
+    np.array(
+        [
+            [72, 177, 167],
+            [200, 87, 123],
+            [182, 94, 189],
+            [103, 166, 78],
+            [111, 124, 203],
+            [180, 148, 64],
+            [202, 96, 63],
+        ]
+    )
+    / 255
+)
+
 
 def despine(ax, spare=[], ticks=False):
     for side in ["left", "right", "top", "bottom"]:
@@ -29,6 +37,7 @@ def despine(ax, spare=[], ticks=False):
             if ticks and side == "bottom":
                 ax.set_xticks([])
 
+
 def shade_error(block, ax, xarr, c, alpha=0.3, label=""):
     if ax is None:
         ax = plt.gca()
@@ -37,8 +46,15 @@ def shade_error(block, ax, xarr, c, alpha=0.3, label=""):
     std = np.nanstd(block, 1)
 
     ax.plot(xarr, mn, c=c, linewidth=2, label=label)
-    ax.fill_between(xarr, mn - std, mn + std, facecolor=c, linewidth=0, alpha=alpha,
-                    label='_nolegend_')
+    ax.fill_between(
+        xarr,
+        mn - std,
+        mn + std,
+        facecolor=c,
+        linewidth=0,
+        alpha=alpha,
+        label="_nolegend_",
+    )
 
 
 def bout_lines_arr(start_idxs, vmin=-2, vmax=5):
@@ -56,9 +72,10 @@ def get_xy(cropped):
     bins, nreps = cropped.shape
     nanned = np.vstack([cropped, np.full(nreps, np.nan)]).T
     yarr = np.concatenate(nanned)
-    xarr = np.concatenate(np.vstack([np.arange(bins + 1), ] * nreps))
+    xarr = np.concatenate(np.vstack([np.arange(bins + 1),] * nreps))
 
     return xarr, yarr
+
 
 def plot_crop(data_mat, f=None, bound_box=None, vlim=3, r=0.65):
     """Plot full matrix and individual and average traces for cropped data.
