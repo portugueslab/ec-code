@@ -32,7 +32,8 @@ def merge_bouts(bouts, min_dist):
 
 def get_bout_properties(t_array, tail_sum, vigor, threshold=0.1):
     """Create dataframe with summary of bouts properties.
-    This is probably complete duplicate from bouter function.
+    TODO: This is probably complete duplicate from bouter function, not sure why we define
+    something different, I'd probably try and replace this with bouter defaults.
 
     :return: a dataframe giving properties for each bout
     """
@@ -41,15 +42,18 @@ def get_bout_properties(t_array, tail_sum, vigor, threshold=0.1):
     # Min distance between 2 bouts below which they get merged in a single bout:
     MIN_DIST_BOUT_MERGE_S = 0.05
 
+    THETA_OFFSET_DURATION_S = 0.1  # window to subract tail_sum mean before bout:
+
     behavior_dt = np.nanmedian(np.diff(t_array))
     bout_init_window_pts = int(DIRECTIONALITY_CALC_WND_S / behavior_dt)
     min_dist_bout_merge_pts = int(MIN_DIST_BOUT_MERGE_S / behavior_dt)
+    theta_offset_duration_pts = int(THETA_OFFSET_DURATION_S / behavior_dt)
 
     bouts, _ = extract_segments_above_threshold(vigor, threshold, min_between=0)
     bouts = merge_bouts(bouts, min_dist_bout_merge_pts)
 
     peak_vig, med_vig, bias, bias_tot = bout_stats.bout_stats(
-        vigor, tail_sum, bouts, bout_init_window_pts
+        vigor, tail_sum, bouts, bout_init_window_pts, theta_offset_duration_pts
     )
     n_pos_peaks, n_neg_peaks = bout_stats.count_peaks_between(
         utilities.bandpass(tail_sum, behavior_dt), bouts[:, 0], bouts[:, 1],
