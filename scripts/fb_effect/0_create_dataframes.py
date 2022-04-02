@@ -12,7 +12,7 @@ from ec_code.file_utils import get_dataset_location
 
 master_path = get_dataset_location("fb_effect")
 
-path_list = list(master_path.glob("*_f[0-9]"))  # list all valid paths
+path_list = [f.parent for f in master_path.glob("*_f[0-9]*/exported.h5")]  # list all valid paths
 
 # Initialize dataframe with all experiments
 exp_df = pd.DataFrame(
