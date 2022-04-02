@@ -44,7 +44,7 @@ stimlog_dict = dict()  # dictionary with all stimulus logs
 beh_dict = dict()  # dictionary with all behavior logs
 
 # Run only if folders are found:
-if path_list > 0:
+if len(path_list) > 0:
     # Load all traces from all fish:
     for path in path_list:
         print(path.stem)
