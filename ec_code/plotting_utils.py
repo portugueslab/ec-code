@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import pandas as pd
 
 plt.rcParams["figure.constrained_layout.use"] = True
 plt.rcParams["font.family"] = "sans-serif"
@@ -72,14 +73,21 @@ def get_xy(cropped):
     bins, nreps = cropped.shape
     nanned = np.vstack([cropped, np.full(nreps, np.nan)]).T
     yarr = np.concatenate(nanned)
-    xarr = np.concatenate(np.vstack([np.arange(bins + 1),] * nreps))
+    xarr = np.concatenate(
+        np.vstack(
+            [
+                np.arange(bins + 1),
+            ]
+            * nreps
+        )
+    )
 
     return xarr, yarr
 
 
-def plot_crop(data_mat, f=None, bound_box=None, vlim=3, r=0.65):
-    """Plot full matrix and individual and average traces for cropped data.
-    """
+def plot_crop(data_mat, f=None, bound_box=None, vlim=3, pre_int_s=2, post_int_s=6,
+              r=0.65):
+    """Plot full matrix and individual and average traces for cropped data."""
     if f is None:
         f = plt.figure()
     if bound_box is None:
@@ -95,7 +103,7 @@ def plot_crop(data_mat, f=None, bound_box=None, vlim=3, r=0.65):
         vmin=-vlim,
         vmax=vlim,
     )
-    local_utils.despine(ax, ticks=True)
+    despine(ax, ticks=True)
     ax1 = f.add_axes((hp, vp, w, h * (1 - r)))
     ax1.axvline(0, linewidth=0.5, c=(0.6,) * 3)
     ax1.plot(

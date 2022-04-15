@@ -2,20 +2,23 @@
 different responses to the presence of visual reafference.
 """
 
-import warnings
 
 import flammkuchen as fl
 from bouter import utilities
 from tqdm import tqdm
 
-from ec_code.analysis_utils import (
-    bout_nan_traces,
-    crop_trace,
-    max_amplitude_resp,
-)
+from ec_code.analysis_utils import bout_nan_traces, max_amplitude_resp
 from ec_code.fb_effect.default_vals import DEF_DT, POST_INT_BT_S, PRE_INT_BT_S
 from ec_code.file_utils import get_dataset_location
 from ec_code.plotting_utils import *
+
+# Analysis parameters
+# percentile of response to be averaged to get amplitude (not to define a window):
+AMPLITUDE_PERC = 90
+
+# Widow for nanning out the bout artefacts:
+WND_PRE_BOUT_NAN_S = 0.2
+WND_POST_BOUT_NAN_S = 0.2
 
 master_path = get_dataset_location("fb_effect")
 
@@ -25,16 +28,13 @@ cells_df = fl.load(master_path / "cells_df.h5")
 bouts_df = fl.load(master_path / "bouts_df.h5")
 traces_df = fl.load(master_path / "traces_df.h5")
 
-fid = exp_df.index[6]
 
-# Analysis parameters:
-AMPLITUDE_PERC = 90  # percentile for the calculation of the response amplitude
+# Different selection criteria to compute responses to bouts:
+# motor: all bouts
+# motor_g0: all bouts of gain 0
+# motor_g1: all bouts of gain 1
+# motor_spont: all bouts occourring spuntaneously
 
-# Widow for nanning out the bout artefacts:
-wnd_pre_bout_nan_s = 0.2
-wnd_post_bout_nan_s = 0.2
-
-# Different selection criteria to compute different responses to motor:
 selections_dict = dict(
     motor=bouts_df["mindist_included"],
     motor_g0=bouts_df["mindist_included"]
@@ -54,8 +54,8 @@ for val in ["rel", "amp"]:
             cells_df[column_id] = np.nan
 
 
-pre_wnd_bout_nan = int(wnd_pre_bout_nan_s / DEF_DT)
-post_wnd_bout_nan = int(wnd_post_bout_nan_s / DEF_DT)
+pre_wnd_bout_nan = int(WND_PRE_BOUT_NAN_S / DEF_DT)
+post_wnd_bout_nan = int(WND_POST_BOUT_NAN_S / DEF_DT)
 
 # Loop over criteria for the different reliabilities:
 for selection in selections_dict.keys():

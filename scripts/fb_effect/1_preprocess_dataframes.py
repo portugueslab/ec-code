@@ -56,7 +56,9 @@ def get_bout_properties(t_array, tail_sum, vigor, threshold=0.1):
         vigor, tail_sum, bouts, bout_init_window_pts, theta_offset_duration_pts
     )
     n_pos_peaks, n_neg_peaks = bout_stats.count_peaks_between(
-        utilities.bandpass(tail_sum, behavior_dt), bouts[:, 0], bouts[:, 1],
+        utilities.bandpass(tail_sum, behavior_dt),
+        bouts[:, 0],
+        bouts[:, 1],
     )
 
     t_start, t_end = [t_array[bouts[:, i]] for i in range(2)]
@@ -74,9 +76,6 @@ def get_bout_properties(t_array, tail_sum, vigor, threshold=0.1):
     )
 
 
-master_path = get_dataset_location("fb_effect")
-raw_data_file = master_path / "summary_dfs.h5"
-
 # TODO read some of those
 PAUSE_DUR = 7
 VIG_WND_S = 0.05
@@ -84,6 +83,9 @@ DT_BE_RESAMP = 0.0025
 IMAGING_DT_S = 0.2
 N_TAIL_SEGMENTS = 9
 DIFF_VEL_THR = 0.025  # threshold for detecting stimulus moving times
+
+master_path = get_dataset_location("fb_effect")
+raw_data_file = master_path / "summary_dfs.h5"
 
 USEFUL_STIM_KEYS = [
     f"selfcalib_shuntgrat_clol1D_base_{k}"

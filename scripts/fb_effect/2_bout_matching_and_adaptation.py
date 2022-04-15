@@ -7,7 +7,7 @@ import flammkuchen as fl
 import numpy as np
 from tqdm import tqdm
 
-from ec_code.fb_effect.default_vals import DEF_DT, POST_INT_BT_S, PRE_INT_BT_S
+from ec_code.fb_effect.default_vals import POST_INT_BT_S, PRE_INT_BT_S
 from ec_code.file_utils import get_dataset_location
 
 ##############################################
@@ -44,6 +44,7 @@ bouts_df["g0"] = (bouts_df["base_vel"] < 0) & (bouts_df["gain"] == 0)
 bouts_df["g1"] = (bouts_df["base_vel"] < 0) & (bouts_df["gain"] == 1)
 bouts_df["spont"] = bouts_df["base_vel"] > -10
 
+# Name of the boolean for inclusion
 bouts_df["matched"] = False
 
 for fid in tqdm(exp_df.index):

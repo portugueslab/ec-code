@@ -20,8 +20,7 @@ cols = (
 
 
 def bout_nan_traces(traces, idxs, wnd_pre=2, wnd_post=5):
-    """ Set to nan the trace values around (bouts) indexes
-    """
+    """Set to nan the trace values around (bouts) indexes"""
     out_traces = traces.copy()
     for idx in idxs:
         out_traces[idx - wnd_pre : idx + wnd_post, :] = np.nan
@@ -53,8 +52,7 @@ def max_amplitude_resp(traces, percentile=80):
 
 
 def crop_trace(trace, timepoints, dt, pre_int_s, post_int_s, normalize=False):
-    """Crop a trace given timepoints and crop interval in seconds and sampling dt.
-    """
+    """Crop a trace given timepoints and crop interval in seconds and sampling dt."""
     start_idxs = np.round(timepoints / dt).astype(np.int)
     cropped = crop(
         trace, start_idxs, pre_int=int(pre_int_s / dt), post_int=int(post_int_s / dt)
@@ -76,8 +74,7 @@ def crop_f_beh_at_times(
     normalize=True,
     beh_trace=None,
 ):
-    """Crop fluorescence trace and behavio trace at given times, and normalize if required.
-    """
+    """Crop fluorescence trace and behavio trace at given times, and normalize if required."""
     fid = cells_df.loc[cid, "fid"]
     cropped = crop_trace(
         traces_df[cid].values,

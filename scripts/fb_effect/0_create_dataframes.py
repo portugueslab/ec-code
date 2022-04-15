@@ -2,17 +2,19 @@
 Can be run after from the raw data traces have been extracted and an
 "exported.h5" dataframe that contains traces and ROI stack is created for every fish.
 """
-from pathlib import Path
 
 import flammkuchen as fl
 import numpy as np
 import pandas as pd
 from bouter import EmbeddedExperiment
+
 from ec_code.file_utils import get_dataset_location
 
 master_path = get_dataset_location("fb_effect")
 
-path_list = [f.parent for f in master_path.glob("*_f[0-9]*/exported.h5")]  # list all valid paths
+path_list = [
+    f.parent for f in master_path.glob("*_f[0-9]*/exported.h5")
+]  # list all valid paths
 
 # Initialize dataframe with all experiments
 exp_df = pd.DataFrame(
@@ -86,6 +88,8 @@ if len(path_list) > 0:
         stimlog_dict[path.stem] = stim_log
         beh_dict[path.stem] = beh_log
 
+    # There is an inconsistency: here we save a single file, and later we re-save those
+    # dfs in different files. Did not have time to fix this.
     fl.save(
         master_path / "summary_dfs.h5",
         dict(
