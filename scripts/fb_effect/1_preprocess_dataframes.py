@@ -88,8 +88,8 @@ master_path = get_dataset_location("fb_effect")
 raw_data_file = master_path / "summary_dfs.h5"
 
 USEFUL_STIM_KEYS = [
-    f"selfcalib_shuntgrat_clol1D_base_{k}"
-    for k in ["vel", "gain", "vel", "x", "fish_swimming"]
+    f"selfcalib_shuntgrat_clol1D_{k}"
+    for k in ["base_vel", "gain", "vel", "x", "fish_swimming"]
 ]
 
 STIM_ATTRIB_TO_ADD = ["base_vel", "gain"]
@@ -266,11 +266,11 @@ for i, fid in enumerate(tqdm(exp_df.index)):
     filt_behlog_dict[fid] = beh_log[["t", "tail_sum", "vigor"]]
 
     # filter stimulus log with the actually useful entries:
-
+    columns_to_take = USEFUL_STIM_KEYS.copy()
     if "moving_gratings_x" in stim_log.keys():
-        USEFUL_STIM_KEYS.append("moving_gratings_x")
+        columns_to_take.append("moving_gratings_x")
 
-    stim_log_filt = stim_log[USEFUL_STIM_KEYS].copy()
+    stim_log_filt = stim_log[columns_to_take].copy()
     # Handle fish_swimming variable to use same format:
     ks_to_conv = ["selfcalib_shuntgrat_clol1D_fish_swimming"]
     for k in ks_to_conv:
@@ -384,7 +384,7 @@ cells_df["genotype"] = cells_df["fid"].map(exp_df["genotype"])
 bouts_df["genotype"] = bouts_df["fid"].map(exp_df["genotype"])
 trials_df["genotype"] = trials_df["fid"].map(exp_df["genotype"])
 
-fl.save(master_path / "exp_df_raw.h5", exp_df)
+fl.save(master_path / "exp_df.h5", exp_df)
 fl.save(master_path / "traces_df.h5", traces_df)
 fl.save(master_path / "cells_df.h5", cells_df)
 fl.save(master_path / "bouts_df.h5", bouts_df)
