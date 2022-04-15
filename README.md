@@ -32,6 +32,7 @@ nb-clean add-filter
 Here is some general guideline for how to run the analyses for the different projects.
 
 ###Visual feedback effect - E0050 (`fb_effect`)
+
 In this analysis, scripts are in `scripts/fb_effect`, notebooks in `scripts/fb_effect`,
 and utilities in `ec_code/fb_effect`. The overall concept is to work with information aggregated from all fish in dataframes:
  - `exp_df`: contains info for every experiment (genotype, quality, fish adaptation, etc.)
