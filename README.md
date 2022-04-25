@@ -16,6 +16,10 @@ the master folder that contains all data should be specified in a `dataset_locat
 file that contains a single string with the folder, placed in the repo (ec-code/dataset_location.txt).
 This file is git-ignored (with the .gitignore file) as it has to remain local.
 
+### Code conventions
+ - manually defined parameters for the analysis (time intervals, hardcoded thresholds, etc.) are all defined as `UPPERCASE_VARIABLES` at the beginning of the scripts;
+ - Analyses that compute numbers happen in scripts, notebooks are for plotting
+
 ### Installation with notebook clean hook
 
 To commit notebooks without content, install `nb-clean`:
@@ -32,6 +36,7 @@ nb-clean add-filter
 Here is some general guideline for how to run the analyses for the different projects.
 
 ###Visual feedback effect - E0050 (`fb_effect`)
+
 In this analysis, scripts are in `scripts/fb_effect`, notebooks in `scripts/fb_effect`,
 and utilities in `ec_code/fb_effect`. The overall concept is to work with information aggregated from all fish in dataframes:
  - `exp_df`: contains info for every experiment (genotype, quality, fish adaptation, etc.)
@@ -45,3 +50,9 @@ Steps:
 - data from all individual fish is pooled together in huge flammkuchen 
 files (using `0_create_dataframes.py`)
 - some preprocessing on bouts is computed, and dataframes that pool together info for every experiment, bout, trial, cell are created (using `1_preprocess_dataframes.py`)
+- bouts are matched by duration and an adaptation index is computed for every fish `2_bout_matching_and_adaptation.py`
+- motor responses are computed (both as amplitudes and reliability scores on different bout types: spontaneous, evoked, cl, ol, etc.) `3_motor_responses.py`
+- differences in responses to closed loop and open loop bouts are computed for every cell, expressed as a p-value defined over the interval of time of the response of maximum difference between cl and ol:`4_cl_vs_ol.py`
+- responses to sensory stimuli (forward and backward motion, after nanning the bouts, both in amplitude and reliability) are computed for all cells: `5_sensory_resps.py`
+
+At this point all numbers are calculated. Some plotting then happens in the notebook `motor_responses_plot.ipynb`, where a function create the summary panels for a single cell that I reported in the TAC and the labfolder entries. Just filtering cells on their p-value was how I was parsing out the most interesting responses.
