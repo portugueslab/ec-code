@@ -1,6 +1,7 @@
 from pathlib import Path
 
-DATASET_NAMES = dict(fb_effect="ECs_E50")
+DATASET_NAMES = dict(fb_effect="ECs_E50",
+                     ephys="ECs_ephys")
 
 
 def _get_master_dataset_location():
